@@ -9,42 +9,54 @@ const urlDatabases = {
   "9sm5xK": "http://www.google.com"
 };
 
-//MIDDLEWARE BELOW
+//MIDDLEWARE BELOW//
+
 app.use(express.urlencoded({ extended: true })); //this decodes the posted data before it reaches the server (ie. buffer => text)
 
 
-//ROUTES BELOW
-app.get('/hello', (request, response) => {
-  const templateVars = { greeting: "Hello World!" };
-  response.render("hello_world", templateVars);
-});
+//ROUTES BELOW//
 
-//must be placed above get request for '/urls/:id'
+//for READING Create New URL Page
 app.get('/urls/new', (request, response) => {
   response.render('urls_new');
 });
 
+//for READING MyURLs page - listing all urls in database
 app.get('/urls', (request, response) => {
   const templateVars = { urls: urlDatabases };
   response.render('urls_index', templateVars);
 });
+
+//for DELETING individual shortURLs
+app.post('/urls/:id/delete', (request, response) => {
+  const key = request.params.id //where is this coming from? (if found it, but I don't understand why I have access to it)
+  delete urlDatabases[key]
+  response.redirect('/urls'); //return page listing all urls
+});
+
+//for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
   const templateVars = { id: request.params.id, longURL: urlDatabases[request.params.id] };
   response.render('urls_show', templateVars);
 });
+
+//for CREATING new links
+app.post('/urls', (request, response) => {
+  const shortID = generateRandomString(request.body.longURL);
+  urlDatabases[shortID] = request.body.longURL; //creates new link
+  response.redirect(`/urls/${shortID}`); //then navigates to newly created link
+});
+
+
+//for READING original link of website from individual shortURL page
 app.get('/u/:id', (request, response) => {
-  response.redirect(`${urlDatabases[request.params.id]}`)
+  response.redirect(`${urlDatabases[request.params.id]}`);
 });
 
 app.get('/', (request, response) => {
   response.send('Hello!');
 });
 
-app.post('/urls', (request, response) => {
-  const shortID = generateRandomString(request.body.longURL);
-  urlDatabases[shortID] = request.body.longURL;
-  response.redirect(`/urls/${shortID}`);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -52,9 +64,9 @@ app.listen(PORT, () => {
 
 const generateRandomString = () => {
   let shortURL = '';
-  let charMin = 48;
-  let charSpan = 122 - charMin;
-  let noChar = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96];
+  const charMin = 48;
+  const charSpan = 122 - charMin;
+  const noChar = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96];
 
   while (shortURL.length < 6) {
     let randChar = charMin + Math.round(charSpan * Math.random());
