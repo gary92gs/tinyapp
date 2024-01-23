@@ -13,6 +13,17 @@ app.get('/', (request, response) => {
   response.send('Hello!');
 });
 
+app.get('/hello', (request, response) => {
+  const templateVars = { greeting: "Hello World!" };
+  response.render("hello_world", templateVars);
+});
+
+//do I need this? Need to test before removal
+// app.get('/header', (request, response) => {
+//   const templateVars = {};
+//   response.render('')
+// });
+
 app.get('/urls', (request, response) => {
   const templateVars = { urls: urlDatabases };
   response.render('urls_index', templateVars);
@@ -23,10 +34,6 @@ app.get('/urls/:id', (request, response) => {
   response.render('urls_show', templateVars);
 });
 
-app.get('/hello', (request, response) => {
-  const templateVars = { greeting: "Hello World!" };
-  response.render("hello_world", templateVars);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
