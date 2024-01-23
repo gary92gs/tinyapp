@@ -9,6 +9,11 @@ const urlDatabases = {
   "9sm5xK": "http://www.google.com"
 };
 
+//MIDDLEWARE BELOW
+app.use(express.urlencoded({ extended: true }));
+
+
+//ROUTES BELOW
 app.get('/hello', (request, response) => {
   const templateVars = { greeting: "Hello World!" };
   response.render("hello_world", templateVars);
@@ -32,8 +37,15 @@ app.get('/', (request, response) => {
   response.send('Hello!');
 });
 
-//app.post();
+app.post('/urls', (request, response) => {
+  console.log(request.body);
+  response.send('OK');
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+const generateRandomString = () => {
+
+};
