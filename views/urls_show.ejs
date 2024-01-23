@@ -4,41 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- We are grabbing basic css with this link (below) -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
-  <title>TinyApp</title>
+  <title>URL - TinyApp Example</title>
 </head>
 
 <body>
-  <main style="margin: 1em;">
-    <h3>My URLs</h3>
-    <table class="table">
-      <!-- thead = table head -->
-      <thead>
-        <tr>
-          <th scope="col">Short URL ID</th>
-          <th scope="col">Long URL</th>
-        </tr>
-      </thead>
-      <!-- tbody = table body -->
-      <tbody>
-        <!-- embedding afor loop that goes through the urls object passed in with response.render() in express_server.js file -->
-        <% for (let id in urls) { %>
-          <tr>
-            <td>
-              <%= id %>
-            </td>
-            <td>
-              <%= urls[id] %>
-            </td>
-          </tr>
-          <% } %>
-      </tbody>
-    </table>
-  </main>
+  <div class="card text-center">
+    <div class="card-header"></div>
+    <div class="card-body">
+      <h5 class="card-title">TinyURL for: <%= longURL %>
+      </h5>
+      <p class="card-text">
+        Short URL ID: <a href="/u/<%= id %>">
+          <%= id %>
+        </a>
+      </p>
+    </div>
+    <div class="card-footer text-muted"></div>
+  </div>
 
-  <!-- Do I need this script??? I am thinking not -->
+  <!-- Commented script out, I do not think I need it. It does not change the page currently -->
   <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
     crossorigin="anonymous"></script>
@@ -48,7 +34,6 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
     crossorigin="anonymous"></script> -->
-
 
 </body>
 

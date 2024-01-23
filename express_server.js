@@ -18,8 +18,14 @@ app.get('/urls', (request, response) => {
   response.render('urls_index', templateVars);
 });
 
+app.get('/urls/:id', (request, response) => {
+  const templateVars = { id: request.params.id, longURL: urlDatabases[request.params.id] };
+  response.render('urls_show', templateVars);
+});
+
 app.get('/hello', (request, response) => {
-  response.send("<html><body>Hello <b>World</b></body></html>\n");
+  const templateVars = { greeting: "Hello World!" };
+  response.render("hello_world", templateVars);
 });
 
 app.listen(PORT, () => {
