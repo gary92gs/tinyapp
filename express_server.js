@@ -32,6 +32,9 @@ app.get('/urls/:id', (request, response) => {
   const templateVars = { id: request.params.id, longURL: urlDatabases[request.params.id] };
   response.render('urls_show', templateVars);
 });
+app.get('/u/:id', (request, response) => {
+  response.redirect(`${urlDatabases[request.params.id]}`)
+});
 
 app.get('/', (request, response) => {
   response.send('Hello!');
@@ -40,8 +43,8 @@ app.get('/', (request, response) => {
 app.post('/urls', (request, response) => {
   const shortID = generateRandomString(request.body.longURL);
   urlDatabases[shortID] = request.body.longURL;
-  console.log(urlDatabases)
-  response.redirect('OK');
+  console.log(urlDatabases);
+  response.redirect(`/urls/${shortID}`);
 });
 
 app.listen(PORT, () => {
@@ -56,7 +59,7 @@ const generateRandomString = () => {
 
   while (shortURL.length < 6) {
     let randChar = charMin + Math.round(charSpan * Math.random());
-    if (noChar.includes(randChar)) { 
+    if (noChar.includes(randChar)) {
       continue;
     }
     shortURL += String.fromCharCode(randChar);
