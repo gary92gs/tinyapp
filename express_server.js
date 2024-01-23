@@ -43,7 +43,6 @@ app.get('/', (request, response) => {
 app.post('/urls', (request, response) => {
   const shortID = generateRandomString(request.body.longURL);
   urlDatabases[shortID] = request.body.longURL;
-  console.log(urlDatabases);
   response.redirect(`/urls/${shortID}`);
 });
 
