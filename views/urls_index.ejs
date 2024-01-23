@@ -32,7 +32,9 @@
               <%= id %>
             </td>
             <td>
-              <%= urls[id] %>
+              <a href = "/urls/<%= id%>">
+                <%= urls[id] %>
+              </a>
             </td>
             <td>
               <form method="POST" action="/urls/<%= id%>/delete">
