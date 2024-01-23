@@ -29,9 +29,17 @@ app.get('/urls', (request, response) => {
 
 //for DELETING individual shortURLs
 app.post('/urls/:id/delete', (request, response) => {
-  const key = request.params.id //where is this coming from? (if found it, but I don't understand why I have access to it)
-  delete urlDatabases[key]
+  const key = request.params.id; //where is this coming from? (if found it, but I don't understand why I have access to it)
+  delete urlDatabases[key];
   response.redirect('/urls'); //return page listing all urls
+});
+
+//for UPDATING individual shortURLs
+app.post('/urls/:id/update', (request, response) => {
+  const newURL = request.body.updatedURL;
+  const key = request.params.id;
+  urlDatabases[key] = newURL;
+  response.redirect('/urls');
 });
 
 //for READING Inividual shortURLs
