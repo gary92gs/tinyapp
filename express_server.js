@@ -10,7 +10,7 @@ const urlDatabases = {
 };
 
 //MIDDLEWARE BELOW
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); //this decodes the posted data before it reaches the server (ie. buffer => text)
 
 
 //ROUTES BELOW
@@ -38,8 +38,10 @@ app.get('/', (request, response) => {
 });
 
 app.post('/urls', (request, response) => {
-  console.log(request.body);
-  response.send('OK');
+  const shortID = generateRandomString(request.body.longURL);
+  urlDatabases[shortID] = request.body.longURL;
+  console.log(urlDatabases)
+  response.redirect('OK');
 });
 
 app.listen(PORT, () => {
@@ -47,5 +49,17 @@ app.listen(PORT, () => {
 });
 
 const generateRandomString = () => {
+  let shortURL = '';
+  let charMin = 48;
+  let charSpan = 122 - charMin;
+  let noChar = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96];
 
+  while (shortURL.length < 6) {
+    let randChar = charMin + Math.round(charSpan * Math.random());
+    if (noChar.includes(randChar)) { 
+      continue;
+    }
+    shortURL += String.fromCharCode(randChar);
+  }
+  return shortURL;
 };
