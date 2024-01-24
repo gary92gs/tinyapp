@@ -11,7 +11,21 @@ const urlDatabases = {
 };
 
 const users = {
-
+  userRandomID: {
+    id: "userRandomID",
+    email: "a@a.com",
+    password: "done",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "b@b.com",
+    password: "doon",
+  },
+  r2jZLU : {
+    id: 'r2jZLU',
+    email: 'gary92.gs@gmail.com',
+    password: 'rocks',
+  },
 };
 
 //MIDDLEWARE BELOW//
@@ -23,17 +37,20 @@ app.use(cookieParser());
 
 //for READING Create New URL Page
 app.get('/urls/new', (request, response) => {
+  const uid = request.cookies.uid;
   const templateVars = {
-    username: request.cookies["username"]
+    user: users[uid]
   };
+  
   response.render('urls_new', templateVars);
 });
 
 //for READING MyURLs page - listing all urls in database
 app.get('/urls', (request, response) => {
+  const uid = request.cookies.uid;
   const templateVars = {
+    user: users[uid],
     urls: urlDatabases,
-    username: request.cookies["username"]
   };
   response.render('urls_index', templateVars);
 });
@@ -55,10 +72,11 @@ app.post('/urls/:id/update', (request, response) => {
 
 //for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
+  const uid = request.cookies.uid;
   const templateVars = {
+    user: users[uid],
     id: request.params.id,
     longURL: urlDatabases[request.params.id],
-    username: request.cookies["username"]
   };
   response.render('urls_show', templateVars);
 });
@@ -78,24 +96,29 @@ app.get('/u/:id', (request, response) => {
 
 //for READING registration page
 app.get('/register', (request, response) => {
+  const uid = request.cookies.uid;
   const templateVars = {
-    username: request.cookies['username']
+    user: users[uid]
+    //user: users['r2jZLU'] //for unlocking myself out of website
   };
   response.render('register', templateVars);
 });
 
 //for REGISTERING NEW USER (CREATE)
 app.post('/register', (request, response) => {
-  const id = generateRandomString();
+  const uid = generateRandomString();
   const email = request.body.email;
   const password = request.body.password;
 
-  users[id] = {
-    id,
+  //save user to database
+  users[uid] = {
+    uid,
     email,
     password
-  }
-  response.cookie('id',id).redirect('/urls');
+  };
+  console.log(users);
+  //give user cookie containing ONLY the user id
+  response.cookie('uid', uid).redirect('/urls');
 });
 
 //for LOGGING IN (CREATE)
