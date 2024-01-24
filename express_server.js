@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 
@@ -12,18 +13,24 @@ const urlDatabases = {
 //MIDDLEWARE BELOW//
 
 app.use(express.urlencoded({ extended: true })); //this decodes the posted data before it reaches the server (ie. buffer => text)
-
+app.use(cookieParser());
 
 //ROUTES BELOW//
 
 //for READING Create New URL Page
 app.get('/urls/new', (request, response) => {
-  response.render('urls_new');
+  const templateVars = {
+    username: request.cookies["username"]
+  };
+  response.render('urls_new',templateVars);
 });
 
 //for READING MyURLs page - listing all urls in database
 app.get('/urls', (request, response) => {
-  const templateVars = { urls: urlDatabases };
+  const templateVars = {
+    urls: urlDatabases,
+    username: request.cookies["username"]
+  };
   response.render('urls_index', templateVars);
 });
 
@@ -44,7 +51,11 @@ app.post('/urls/:id/update', (request, response) => {
 
 //for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
-  const templateVars = { id: request.params.id, longURL: urlDatabases[request.params.id] };
+  const templateVars = {
+    id: request.params.id,
+    longURL: urlDatabases[request.params.id],
+    username: request.cookies["username"]
+  };
   response.render('urls_show', templateVars);
 });
 
@@ -63,9 +74,8 @@ app.get('/u/:id', (request, response) => {
 
 //for LOGGING IN (CREATE)
 app.post('/login', (request, response) => {
-  console.log(request.body);
   const username = request.body.username;
-  response.cookie('username',username).redirect('/urls');
+  response.cookie('username', username).redirect('/urls');
 });
 
 app.get('/', (request, response) => {
