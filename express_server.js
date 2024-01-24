@@ -22,7 +22,7 @@ app.get('/urls/new', (request, response) => {
   const templateVars = {
     username: request.cookies["username"]
   };
-  response.render('urls_new',templateVars);
+  response.render('urls_new', templateVars);
 });
 
 //for READING MyURLs page - listing all urls in database
@@ -76,6 +76,12 @@ app.get('/u/:id', (request, response) => {
 app.post('/login', (request, response) => {
   const username = request.body.username;
   response.cookie('username', username).redirect('/urls');
+});
+
+//for LOGGING OUT (DELETE)
+app.post('/logout', (request, response) => {
+  const username = request.cookies.username;
+  response.clearCookie('username').redirect('/urls');
 });
 
 app.get('/', (request, response) => {
