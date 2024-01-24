@@ -72,6 +72,14 @@ app.get('/u/:id', (request, response) => {
   response.redirect(`${urlDatabases[request.params.id]}`);
 });
 
+//for REGISTERING USER (CREATE)
+app.get('/register', (request, response) => {
+  const templateVars = {
+    username: request.cookies['username']
+  };
+  response.render('register', templateVars);
+});
+
 //for LOGGING IN (CREATE)
 app.post('/login', (request, response) => {
   const username = request.body.username;
