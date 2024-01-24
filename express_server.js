@@ -37,9 +37,8 @@ app.use(cookieParser());
 
 //for READING Create New URL Page
 app.get('/urls/new', (request, response) => {
-  const uid = request.cookies.uid;
   const templateVars = {
-    user: users[uid]
+    user: users[request.cookies.uid]
   };
   
   response.render('urls_new', templateVars);
@@ -47,9 +46,8 @@ app.get('/urls/new', (request, response) => {
 
 //for READING MyURLs page - listing all urls in database
 app.get('/urls', (request, response) => {
-  const uid = request.cookies.uid;
   const templateVars = {
-    user: users[uid],
+    user: users[request.cookies.uid],
     urls: urlDatabases,
   };
   response.render('urls_index', templateVars);
@@ -72,9 +70,8 @@ app.post('/urls/:id/update', (request, response) => {
 
 //for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
-  const uid = request.cookies.uid;
   const templateVars = {
-    user: users[uid],
+    user: users[request.cookies.uid],
     id: request.params.id,
     longURL: urlDatabases[request.params.id],
   };
@@ -96,10 +93,9 @@ app.get('/u/:id', (request, response) => {
 
 //for READING registration page
 app.get('/register', (request, response) => {
-  const uid = request.cookies.uid;
   const templateVars = {
-    user: users[uid]
-    //user: users['r2jZLU'] //for unlocking myself out of website
+    user: users[request.cookies.uid]
+    // user: users['r2jZLU'] //for unlocking myself out of website
   };
   response.render('register', templateVars);
 });
@@ -129,8 +125,8 @@ app.post('/login', (request, response) => {
 
 //for LOGGING OUT (DELETE)
 app.post('/logout', (request, response) => {
-  const username = request.cookies.username;
-  response.clearCookie('username').redirect('/urls');
+  const uid = request.cookies.uid;
+  response.clearCookie('uid').redirect('/urls');
 });
 
 app.get('/', (request, response) => {
