@@ -10,6 +10,10 @@ const urlDatabases = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+
+};
+
 //MIDDLEWARE BELOW//
 
 app.use(express.urlencoded({ extended: true })); //this decodes the posted data before it reaches the server (ie. buffer => text)
@@ -72,12 +76,26 @@ app.get('/u/:id', (request, response) => {
   response.redirect(`${urlDatabases[request.params.id]}`);
 });
 
-//for REGISTERING USER (CREATE)
+//for READING registration page
 app.get('/register', (request, response) => {
   const templateVars = {
     username: request.cookies['username']
   };
   response.render('register', templateVars);
+});
+
+//for REGISTERING NEW USER (CREATE)
+app.post('/register', (request, response) => {
+  const id = generateRandomString();
+  const email = request.body.email;
+  const password = request.body.password;
+
+  users[id] = {
+    id,
+    email,
+    password
+  }
+  response.cookie('id',id).redirect('/urls');
 });
 
 //for LOGGING IN (CREATE)
