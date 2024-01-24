@@ -61,6 +61,13 @@ app.get('/u/:id', (request, response) => {
   response.redirect(`${urlDatabases[request.params.id]}`);
 });
 
+//for LOGGING IN (CREATE)
+app.post('/login', (request, response) => {
+  console.log(request.body);
+  const username = request.body;
+  response.cookie('username',username).redirect('/urls');
+});
+
 app.get('/', (request, response) => {
   response.send('Hello!');
 });
