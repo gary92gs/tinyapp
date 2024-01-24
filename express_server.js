@@ -64,7 +64,7 @@ app.get('/u/:id', (request, response) => {
 //for LOGGING IN (CREATE)
 app.post('/login', (request, response) => {
   console.log(request.body);
-  const username = request.body;
+  const username = request.body.username;
   response.cookie('username',username).redirect('/urls');
 });
 
