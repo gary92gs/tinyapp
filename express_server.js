@@ -21,7 +21,7 @@ const users = {
     email: "b@b.com",
     password: "doon",
   },
-  r2jZLU : {
+  r2jZLU: {
     id: 'r2jZLU',
     email: 'gary92.gs@gmail.com',
     password: 'rocks',
@@ -40,7 +40,7 @@ app.get('/urls/new', (request, response) => {
   const templateVars = {
     user: users[request.cookies.uid]
   };
-  
+
   response.render('urls_new', templateVars);
 });
 
@@ -100,8 +100,18 @@ app.get('/register', (request, response) => {
   response.render('register', templateVars);
 });
 
-//for REGISTERING NEW USER (CREATE)
+//for CREATING new user via registration page
 app.post('/register', (request, response) => {
+  //filter bad email/password entries
+  if (!request.body.email || !request.body.password) {
+    return response.status(400).send('The email or password you provided is invalid');
+  }
+  //filter registration of existing user
+  if (!isNewUser(request.body.email)){
+    return response.status(400).send('The email you provided has already been registered');
+  }
+
+  //happy path = generate unique user ID and save new user to database
   const uid = generateRandomString();
   const email = request.body.email;
   const password = request.body.password;
@@ -153,3 +163,12 @@ const generateRandomString = () => {
   }
   return shortURL;
 };
+
+const isNewUser = (email) => {
+  for (const uid in users){
+    if (users[uid].email === email) {
+      return false; //false = not new user
+    }
+  }
+  return true; //true = new user
+}
