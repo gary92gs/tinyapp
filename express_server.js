@@ -127,7 +127,7 @@ app.post('/register', (request, response) => {
   response.cookie('uid', uid).redirect('/urls');
 });
 
-//for LOGGING IN (CREATE) //PROBABLY NEED TO REMOVE/ALTER COOKIE FUNCTION HERE
+//for lOGIN PAGE (READ)
 app.get('/login', (request, response) => {
   const templateVars = {
     user: users[request.cookies.uid]
@@ -135,6 +135,7 @@ app.get('/login', (request, response) => {
   response.render('login', templateVars);
 });
 
+//for LOGGING IN (check user credentials)
 app.post('/login', (request, response) => {
   let user = null;
   console.log('login path \n rbemail', request.body.email, 'rbpassword', request.body.password);
@@ -143,7 +144,7 @@ app.post('/login', (request, response) => {
     user = getUserObj(request.body.email);
     console.log('user retrieved: ', user);
   } else {
-    return response.status(400).send('Invalid Login Credentials');
+    return response.status(403).send('Invalid Login Credentials');
   }
 
   //if user already registered and password correct, give cookie with uid
@@ -153,8 +154,7 @@ app.post('/login', (request, response) => {
 
 //for LOGGING OUT (DELETE)
 app.post('/logout', (request, response) => {
-  const uid = request.cookies.uid;
-  response.clearCookie('uid').redirect('/urls');
+  response.clearCookie('uid').redirect('/login');
 });
 
 app.get('/', (request, response) => {
