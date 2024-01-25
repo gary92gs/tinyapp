@@ -37,6 +37,10 @@ app.use(cookieParser());
 
 //for READING Create New URL Page
 app.get('/urls/new', (request, response) => {
+  //filter non-logged-in users(ie. no cookie or invalid cookie)
+  if (!request.cookies.uid || !Object.keys(users).includes(request.cookies.uid)) {
+    return response.redirect('/login');
+  }
   const templateVars = {
     user: users[request.cookies.uid]
   };
@@ -80,6 +84,10 @@ app.get('/urls/:id', (request, response) => {
 
 //for CREATING new links
 app.post('/urls', (request, response) => {
+  //filter non-logged-in users (ie. no cookie or invalid cookie)
+  if (!request.cookies.uid || !Object.keys(users).includes(request.cookies.uid)) {
+    return response.send('You must login to create short URLs\n');
+  }
   const shortID = generateRandomString(request.body.longURL);
   urlDatabases[shortID] = request.body.longURL; //creates new link
   response.redirect(`/urls/${shortID}`); //then navigates to newly created link
@@ -88,11 +96,19 @@ app.post('/urls', (request, response) => {
 
 //for READING original link of website from individual shortURL page
 app.get('/u/:id', (request, response) => {
+  //filter out requests for non-existent shortened urls
+  if (!Object.keys(urlDatabases).includes(request.params.id)) {
+    return response.status(400).send('The short URL you have attempted to access does not exist\n')
+  }
   response.redirect(`${urlDatabases[request.params.id]}`);
 });
 
 //for READING registration page
 app.get('/register', (request, response) => {
+  //filter logged in users (ie. do they have a cookie)
+  if (Object.keys(users).includes(request.cookies.uid)) {
+    return response.redirect('/urls');
+  }
   const templateVars = {
     user: users[request.cookies.uid]
     // user: users['r2jZLU'] //for unlocking myself out of website
@@ -104,13 +120,12 @@ app.get('/register', (request, response) => {
 app.post('/register', (request, response) => {
   //filter bad email/password entries
   if (!request.body.email || !request.body.password) {
-    return response.status(400).send('The email or password you provided is invalid');
+    return response.status(400).redirect('/register');
   }
   //filter registration of existing user
-  if (!isNewUser(request.body.email)) {
-    return response.status(400).send('The email you provided has already been registered');
+  if (isUser(request.body.email)) {
+    return response.status(400).redirect('/login');
   }
-
   //happy path = generate unique user ID and save new user to database
   const uid = generateRandomString();
   const email = request.body.email;
@@ -129,6 +144,10 @@ app.post('/register', (request, response) => {
 
 //for lOGIN PAGE (READ)
 app.get('/login', (request, response) => {
+  //filter logged in users (ie. do they have cookie with matching id)
+  if (Object.keys(users).includes(request.cookies.uid)) {
+    return response.redirect('/urls');
+  }
   const templateVars = {
     user: users[request.cookies.uid]
   };
@@ -142,13 +161,12 @@ app.post('/login', (request, response) => {
   //check if user email is registered in database
   if (isValidCredentials(request.body.email, request.body.password)) {
     user = getUserObj(request.body.email);
-    console.log('user retrieved: ', user);
   } else {
     return response.status(403).send('Invalid Login Credentials');
   }
 
   //if user already registered and password correct, give cookie with uid
-  response.cookie('uid',`${user.id}`).redirect('/urls');
+  response.cookie('uid', `${user.id}`).redirect('/urls');
 
 });
 
@@ -188,20 +206,19 @@ const getUserObj = (email) => {
       return users[uid];
     }
   }
-  return null;
+  return false;
 };
 
-const isNewUser = (email) => {
+const isUser = (email) => {
   for (const uid in users) {
     if (users[uid].email === email) {
-      return false; //false = not new user
+      return true;
     }
   }
-  return true; //true = new user
+  return false;
 };
 
 const isValidCredentials = (email, password) => {
-  console.log('inside valid cred \n email: ', email, 'password', password);
   for (const uid in users) {
     if (users[uid].email === email && users[uid].password === password) {
       return true;
