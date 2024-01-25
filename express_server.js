@@ -107,7 +107,7 @@ app.post('/register', (request, response) => {
     return response.status(400).send('The email or password you provided is invalid');
   }
   //filter registration of existing user
-  if (!isNewUser(request.body.email)){
+  if (!isNewUser(request.body.email)) {
     return response.status(400).send('The email you provided has already been registered');
   }
 
@@ -127,10 +127,28 @@ app.post('/register', (request, response) => {
   response.cookie('uid', uid).redirect('/urls');
 });
 
-//for LOGGING IN (CREATE)
+//for LOGGING IN (CREATE) //PROBABLY NEED TO REMOVE/ALTER COOKIE FUNCTION HERE
+app.get('/login', (request, response) => {
+  const templateVars = {
+    user: users[request.cookies.uid]
+  };
+  response.render('login', templateVars);
+});
+
 app.post('/login', (request, response) => {
-  const username = request.body.username;
-  response.cookie('username', username).redirect('/urls');
+  let user = null;
+  console.log('login path \n rbemail', request.body.email, 'rbpassword', request.body.password);
+  //check if user email is registered in database
+  if (isValidCredentials(request.body.email, request.body.password)) {
+    user = getUserObj(request.body.email);
+    console.log('user retrieved: ', user);
+  } else {
+    return response.status(400).send('Invalid Login Credentials');
+  }
+
+  //if user already registered and password correct, give cookie with uid
+  response.cookie('uid',`${user.id}`).redirect('/urls');
+
 });
 
 //for LOGGING OUT (DELETE)
@@ -164,11 +182,30 @@ const generateRandomString = () => {
   return shortURL;
 };
 
+const getUserObj = (email) => {
+  for (const uid in users) {
+    if (users[uid].email === email) {
+      return users[uid];
+    }
+  }
+  return null;
+};
+
 const isNewUser = (email) => {
-  for (const uid in users){
+  for (const uid in users) {
     if (users[uid].email === email) {
       return false; //false = not new user
     }
   }
   return true; //true = new user
-}
+};
+
+const isValidCredentials = (email, password) => {
+  console.log('inside valid cred \n email: ', email, 'password', password);
+  for (const uid in users) {
+    if (users[uid].email === email && users[uid].password === password) {
+      return true;
+    }
+  }
+  return false;
+};

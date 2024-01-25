@@ -19,10 +19,8 @@
     </form>
 
     <%}else{%>
-    <form action="/login" method="POST">
-      <input name="username" type="text" placeholder="Username">
-      <button type="submit" class="btn btn-primary" >Login</button>
-    </form>
+      <a href="/login" class="btn btn-primary" style="margin-inline:5px">Login</a>
+      <a href="/register" class="btn btn-secondary" style="margin-inline:5px">Register</a>
     <%}%>
   </nav>
 </header>

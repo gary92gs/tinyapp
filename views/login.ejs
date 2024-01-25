@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
   integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
-  <title>User Registration</title>
+  <title>TinyApp Login</title>
 </head>
 <body>
   <%-include('partials/_header')%>
 
   <table>
     <thead>
-      <h3>New User</h3>
+      <h3>Login</h3>
     </thead>
-    <form action="/register" method="POST">
+    <form action="/login" method="POST">
       <tr>
         <td>
           <label for="email">Email Address: </label>
@@ -29,12 +29,11 @@
       </tr>
       <tr>
         <td>
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button type="submit" class="btn btn-primary">Login</button>
         </td>
       </tr>
     </form>
   </table>
-  
   
 </body>
 </html>
