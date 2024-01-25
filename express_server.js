@@ -6,8 +6,22 @@ const PORT = 8080;
 app.set('view engine', 'ejs'); //ejs needs to be installed to reference to it (note it is not 'required' above)
 
 const urlDatabases = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "r2jZLU"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "r2jZLU"
+  },
+  "6tg5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  },
+  "42X5xK": {
+    longURL: "http://www.google.com",
+    userID: "userRandomID"
+  },
 };
 
 const users = {
@@ -50,9 +64,10 @@ app.get('/urls/new', (request, response) => {
 
 //for READING MyURLs page - listing all urls in database
 app.get('/urls', (request, response) => {
+  //console.log(Object.entries(urlDatabases))
   const templateVars = {
     user: users[request.cookies.uid],
-    urls: urlDatabases,
+    urls: getUserURLs(request.cookies.uid) //only pass the urls that belong to the current user
   };
   response.render('urls_index', templateVars);
 });
@@ -66,18 +81,27 @@ app.post('/urls/:id/delete', (request, response) => {
 
 //for UPDATING individual shortURLs
 app.post('/urls/:id/update', (request, response) => {
+
+
   const newURL = request.body.updatedURL;
   const key = request.params.id;
-  urlDatabases[key] = newURL;
+  urlDatabases[key].longURL = newURL;
   response.redirect('/urls');
 });
 
 //for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
+  // filter non-logged in users and users who do not have the correct cookie
+  const cookID = request.cookies.uid;
+  const urlID = urlDatabases[request.params.id].userID
+  if (!request.cookies.uid || urlID !== cookID) {
+    return response.status(401).send('You are not authorized to view this page');
+  }
+
   const templateVars = {
     user: users[request.cookies.uid],
     id: request.params.id,
-    longURL: urlDatabases[request.params.id],
+    longURL: urlDatabases[request.params.id].longURL,
   };
   response.render('urls_show', templateVars);
 });
@@ -89,7 +113,10 @@ app.post('/urls', (request, response) => {
     return response.send('You must login to create short URLs\n');
   }
   const shortID = generateRandomString(request.body.longURL);
-  urlDatabases[shortID] = request.body.longURL; //creates new link
+  urlDatabases[shortID] = {
+    longURL: request.body.longURL,
+    userID: request.cookies.uid
+  }; 
   response.redirect(`/urls/${shortID}`); //then navigates to newly created link
 });
 
@@ -98,7 +125,7 @@ app.post('/urls', (request, response) => {
 app.get('/u/:id', (request, response) => {
   //filter out requests for non-existent shortened urls
   if (!Object.keys(urlDatabases).includes(request.params.id)) {
-    return response.status(400).send('The short URL you have attempted to access does not exist\n')
+    return response.status(400).send('The short URL you have attempted to access does not exist\n');
   }
   response.redirect(`${urlDatabases[request.params.id]}`);
 });
@@ -225,4 +252,14 @@ const isValidCredentials = (email, password) => {
     }
   }
   return false;
+};
+
+const getUserURLs = (uid) => {
+  const userURLs = {};
+  for (const key in urlDatabases) {
+    if (urlDatabases[key].userID === uid) {
+      userURLs[key] = urlDatabases[key];
+    }
+  }
+  return userURLs;
 };

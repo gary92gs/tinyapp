@@ -16,23 +16,22 @@
   <main style="margin: 1em;">
     <h3>My URLs</h3>
     <table class="table">
-      <!-- thead = table head -->
+        <!-- embedding afor loop that goes through the urls object passed in with response.render() in express_server.js file -->
+      <% if (user) { %>  
       <thead>
         <tr>
           <th scope="col">Short URL ID</th>
           <th scope="col">Long URL</th>
         </tr>
       </thead>
-      <!-- tbody = table body -->
       <tbody>
-        <!-- embedding afor loop that goes through the urls object passed in with response.render() in express_server.js file -->
         <% for (let id in urls) { %>
           <tr>
             <td>
               <%= id %>
             </td>
             <td>
-              <%= urls[id] %>
+              <%= urls[id].longURL %>
             </td>
             <td>
               <form method="GET" action="/urls/<%=id%>">
@@ -45,7 +44,10 @@
               </form>
             </td>
           </tr>
-          <% } %>
+        <% } %>
+      <% } else { %>
+        <div>You Must Log In To View Your Short URLs</div>
+      <% } %>
       </tbody>
     </table>
   </main>
