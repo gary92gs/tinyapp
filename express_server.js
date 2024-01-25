@@ -74,15 +74,45 @@ app.get('/urls', (request, response) => {
 
 //for DELETING individual shortURLs
 app.post('/urls/:id/delete', (request, response) => {
-  const key = request.params.id; //where is this coming from? (if found it, but I don't understand why I have access to it)
+  //filter users without cookie or valid cookie or url doesn't exist
+  //if the short url id does not exist in the database
+  if (!urlDatabases[request.params.id]) {
+    return response.status(404).send('Not Found. Shortened URL does not exist for the requested URL');
+  }
+  const urlID = urlDatabases[request.params.id].userID;
+  //if cookie doesn't exist
+  const cookID = request.cookies.uid;
+  if (!cookID) {
+    return response.status(401).send('Not Authorized. You must login');
+  }
+  //if user does not own url
+  if (urlID !== cookID) {
+    return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
+  }
+
+  const key = request.params.id; 
   delete urlDatabases[key];
   response.redirect('/urls'); //return page listing all urls
 });
 
 //for UPDATING individual shortURLs
 app.post('/urls/:id/update', (request, response) => {
-
-
+  //filters users without cookie or valid cookie or url doesn't exist
+  //if the short url id does not exist in the database
+  if (!urlDatabases[request.params.id]) {
+    return response.status(404).send('Not Found. Shortened URL does not exist for the requested URL');
+  }
+  //if cookie doesn't exist
+  const cookID = request.cookies.uid;
+  if (!cookID) {
+    return response.send('Not Authorized. You must login');
+  }
+  const urlID = urlDatabases[request.params.id].userID;
+  //if user does not own url
+  if (urlID !== cookID) {
+    return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
+  }
+  
   const newURL = request.body.updatedURL;
   const key = request.params.id;
   urlDatabases[key].longURL = newURL;
@@ -92,10 +122,19 @@ app.post('/urls/:id/update', (request, response) => {
 //for READING Inividual shortURLs
 app.get('/urls/:id', (request, response) => {
   // filter non-logged in users and users who do not have the correct cookie
+  //if short url not found in database
+  if(!urlDatabases[request.params.id]){
+    return response.status(404).send('Not Found. Shortened URL does not exist for the requested URL')
+  }
+  const urlID = urlDatabases[request.params.id].userID;
+  //if cookie doesn't exist
   const cookID = request.cookies.uid;
-  const urlID = urlDatabases[request.params.id].userID
-  if (!request.cookies.uid || urlID !== cookID) {
-    return response.status(401).send('You are not authorized to view this page');
+  if (!cookID) {
+    return response.status(401).send('Not Authorized. You must login');
+  }
+  //if user does not own url
+  if (urlID !== cookID){
+    return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you')
   }
 
   const templateVars = {
@@ -116,10 +155,9 @@ app.post('/urls', (request, response) => {
   urlDatabases[shortID] = {
     longURL: request.body.longURL,
     userID: request.cookies.uid
-  }; 
+  };
   response.redirect(`/urls/${shortID}`); //then navigates to newly created link
 });
-
 
 //for READING original link of website from individual shortURL page
 app.get('/u/:id', (request, response) => {
