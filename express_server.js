@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-const helper = require('./helpers');
+const helpers = require('./helpers');
 const app = express();
 const PORT = 8080;
 
@@ -56,7 +56,7 @@ app.get('/urls/new', (request, response) => {
 app.get('/urls', (request, response) => {
   const templateVars = {
     user: users[request.session.uid],
-    urls: getUserURLs(request.session.uid) //only pass the urls that belong to the current user
+    urls: helpers.getUserURLs(request.session.uid,urlDatabases) //only pass the urls that belong to the current user
   };
   return response.render('urls_index', templateVars);
 });
@@ -141,7 +141,7 @@ app.post('/urls', (request, response) => {
   if (!request.session.uid || !Object.keys(users).includes(request.session.uid)) {
     return response.send('You must login to create short URLs\n');
   }
-  const shortID = generateRandomString(request.body.longURL);
+  const shortID = helpers.generateRandomString(request.body.longURL);
   urlDatabases[shortID] = {
     longURL: request.body.longURL,
     userID: request.session.uid
@@ -178,11 +178,11 @@ app.post('/register', (request, response) => {
     return response.status(400).redirect('/register');
   }
   //filter registration of existing user
-  if (isUser(request.body.email)) {
+  if(helpers.getUserByEmail) {
     return response.status(400).redirect('/login');
   }
   //happy path = generate unique user ID and save new user to database
-  const uid = generateRandomString();
+  const uid = helpers.generateRandomString();
   const email = request.body.email;
   const password = request.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -214,8 +214,8 @@ app.post('/login', (request, response) => {
   let user = null;
 
   //check if user email is registered in database
-  if (isValidCredentials(request.body.email, request.body.password)) {
-    user = helper.getUserObjByEmail(request.body.email,users);
+  if (helpers.isValidCredentials(request.body.email, request.body.password,users)) {
+    user = helpers.getUserByEmail(request.body.email,users);
   } else {
     return response.status(403).send('Invalid Login Credentials');
   }
@@ -234,55 +234,8 @@ app.get('/', (request, response) => {
   return response.send('Hello!');
 });
 
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const generateRandomString = () => {
-  let shortURL = '';
-  const charMin = 48;
-  const charSpan = 122 - charMin;
-  const noChar = [58, 59, 60, 61, 62, 63, 64, 91, 92, 93, 94, 95, 96];
 
-  while (shortURL.length < 6) {
-    let randChar = charMin + Math.round(charSpan * Math.random());
-    if (noChar.includes(randChar)) {
-      continue;
-    }
-    shortURL += String.fromCharCode(randChar);
-  }
-  return shortURL;
-};
-
-
-const isUser = (email) => {
-  for (const uid in users) {
-    if (users[uid].email === email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const isValidCredentials = (email, password) => {
-  for (const uid in users) {
-    if (users[uid].email === email) {
-      //if email is valid, then check hashed password (less time spent running synchronous bcrypt)
-      if (bcrypt.compareSync(password, users[uid].password)) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
-
-const getUserURLs = (uid) => {
-  const userURLs = {};
-  for (const key in urlDatabases) {
-    if (urlDatabases[key].userID === uid) {
-      userURLs[key] = urlDatabases[key];
-    }
-  }
-  return userURLs;
-};
