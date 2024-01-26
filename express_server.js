@@ -25,7 +25,7 @@ const urlDatabases = {
 const users = {
   r2jZLU: {
     id: 'r2jZLU',
-    email: 'gary92.gs@gmail.com',
+    email: 'test@test.com',
     password: '$2a$10$7WoesiyZu1BhaTEZrtp28eJxdM7B5dbn2mAPPaKWWnORM9CO84K02', //amazing
   },
   "userRandomID": {
@@ -89,7 +89,6 @@ app.post('/urls/:id/delete', (request, response) => {
   if (urlID !== cookID) {
     return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
-
   const key = request.params.id;
   delete urlDatabases[key];
   return response.redirect('/urls'); //return page listing all urls
@@ -112,7 +111,6 @@ app.post('/urls/:id/update', (request, response) => {
   if (urlID !== cookID) {
     return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
-
   const newURL = request.body.updatedURL;
   const key = request.params.id;
   urlDatabases[key].longURL = newURL;
@@ -136,7 +134,6 @@ app.get('/urls/:id', (request, response) => {
   if (urlID !== cookID) {
     return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
-
   const templateVars = {
     user: users[request.session.uid],
     id: request.params.id,
@@ -189,7 +186,7 @@ app.post('/register', (request, response) => {
     return response.status(400).send('Bad Request. Please enter a valid email adddress and password.');
   }
   //filter registration of existing user
-  if (helpers.getUserByEmail(request.body.email,users)) {
+  if (helpers.getUserByEmail(request.body.email, users)) {
     return response.status(400).send(`Bad Request. The email address ${request.body.email} is already in use.`);
   }
   //happy path = generate unique user ID and save new user to database
@@ -197,7 +194,6 @@ app.post('/register', (request, response) => {
   const email = request.body.email;
   const password = request.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-
   //save user to database
   users[uid] = {
     uid,
@@ -224,7 +220,6 @@ app.get('/login', (request, response) => {
 //for LOGGING IN (check user credentials)
 app.post('/login', (request, response) => {
   let user = null;
-
   //check if user email is registered in database
   if (helpers.isValidCredentials(request.body.email, request.body.password, users)) {
     user = helpers.getUserByEmail(request.body.email, users);
