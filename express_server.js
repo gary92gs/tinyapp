@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const helper = require('./helpers');
 const app = express();
 const PORT = 8080;
 
@@ -214,7 +215,7 @@ app.post('/login', (request, response) => {
 
   //check if user email is registered in database
   if (isValidCredentials(request.body.email, request.body.password)) {
-    user = getUserObj(request.body.email);
+    user = helper.getUserObjByEmail(request.body.email,users);
   } else {
     return response.status(403).send('Invalid Login Credentials');
   }
@@ -254,14 +255,6 @@ const generateRandomString = () => {
   return shortURL;
 };
 
-const getUserObj = (email) => {
-  for (const uid in users) {
-    if (users[uid].email === email) {
-      return users[uid];
-    }
-  }
-  return false;
-};
 
 const isUser = (email) => {
   for (const uid in users) {
