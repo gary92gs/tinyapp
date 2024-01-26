@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
@@ -38,7 +39,7 @@ const users = {
   r2jZLU: {
     id: 'r2jZLU',
     email: 'gary92.gs@gmail.com',
-    password: 'rocks',
+    password: bcrypt.hashSync('rocks', 10),
   },
 };
 
@@ -90,7 +91,7 @@ app.post('/urls/:id/delete', (request, response) => {
     return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
 
-  const key = request.params.id; 
+  const key = request.params.id;
   delete urlDatabases[key];
   response.redirect('/urls'); //return page listing all urls
 });
@@ -112,7 +113,7 @@ app.post('/urls/:id/update', (request, response) => {
   if (urlID !== cookID) {
     return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
-  
+
   const newURL = request.body.updatedURL;
   const key = request.params.id;
   urlDatabases[key].longURL = newURL;
@@ -123,8 +124,8 @@ app.post('/urls/:id/update', (request, response) => {
 app.get('/urls/:id', (request, response) => {
   // filter non-logged in users and users who do not have the correct cookie
   //if short url not found in database
-  if(!urlDatabases[request.params.id]){
-    return response.status(404).send('Not Found. Shortened URL does not exist for the requested URL')
+  if (!urlDatabases[request.params.id]) {
+    return response.status(404).send('Not Found. Shortened URL does not exist for the requested URL');
   }
   const urlID = urlDatabases[request.params.id].userID;
   //if cookie doesn't exist
@@ -133,8 +134,8 @@ app.get('/urls/:id', (request, response) => {
     return response.status(401).send('Not Authorized. You must login');
   }
   //if user does not own url
-  if (urlID !== cookID){
-    return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you')
+  if (urlID !== cookID) {
+    return response.status(401).send('Not Authorized. You do not have access to URLs that do not belong to you');
   }
 
   const templateVars = {
@@ -195,14 +196,13 @@ app.post('/register', (request, response) => {
   const uid = generateRandomString();
   const email = request.body.email;
   const password = request.body.password;
-
+  const hashedPassword = bcrypt.hashSync(password, 10);
   //save user to database
   users[uid] = {
     uid,
     email,
-    password
+    password: hashedPassword,
   };
-  console.log(users);
   //give user cookie containing ONLY the user id
   response.cookie('uid', uid).redirect('/urls');
 });
@@ -222,7 +222,7 @@ app.get('/login', (request, response) => {
 //for LOGGING IN (check user credentials)
 app.post('/login', (request, response) => {
   let user = null;
-  console.log('login path \n rbemail', request.body.email, 'rbpassword', request.body.password);
+
   //check if user email is registered in database
   if (isValidCredentials(request.body.email, request.body.password)) {
     user = getUserObj(request.body.email);
@@ -231,7 +231,7 @@ app.post('/login', (request, response) => {
   }
 
   //if user already registered and password correct, give cookie with uid
-  response.cookie('uid', `${user.id}`).redirect('/urls');
+  response.cookie('uid', `${user.uid}`).redirect('/urls');
 
 });
 
@@ -285,8 +285,11 @@ const isUser = (email) => {
 
 const isValidCredentials = (email, password) => {
   for (const uid in users) {
-    if (users[uid].email === email && users[uid].password === password) {
-      return true;
+    if (users[uid].email === email) {
+      //if email is valid, then check hashed password (less time spent running synchronous bcrypt)
+      if (bcrypt.compareSync(password, users[uid].password)) {
+        return true;
+      }
     }
   }
   return false;
