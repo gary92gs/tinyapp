@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const helpers = require('./helpers');
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 
 app.set('view engine', 'ejs'); //ejs needs to be installed to reference to it (note it is not 'required' above)
 
@@ -18,7 +18,7 @@ const urlDatabases = {
   },
   "r2j5e3": {
     longURL: "http://www.google.com",
-    userID: "r2j5e3"
+    userID: "rqQ4af"
   },
 };
 
@@ -28,10 +28,21 @@ const users = {
     email: 'gary92.gs@gmail.com',
     password: '$2a$10$7WoesiyZu1BhaTEZrtp28eJxdM7B5dbn2mAPPaKWWnORM9CO84K02', //amazing
   },
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "$2a$10$V17p/2mCozn/S5IcJxdZk.gwvEo79TYoC2GAWavR9OqjpIIYJfwYu" //purple-monkey-dinosaur
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "$2a$10$cZlBYY26T0AuZTU9xTSPme0lno7ejaB7rhvWUoGcDmOJrXZ2SGaNi" //dishwasher-funk
+  }
 };
 
 //MIDDLEWARE BELOW//
 app.use(express.urlencoded({ extended: true })); //this decodes the posted data before it reaches the server (ie. buffer => text)
+app.use(express.json());
 app.use(cookieSession({
   name: 'session',
   keys: ['catch22'],
@@ -56,7 +67,7 @@ app.get('/urls/new', (request, response) => {
 app.get('/urls', (request, response) => {
   const templateVars = {
     user: users[request.session.uid],
-    urls: helpers.getUserURLs(request.session.uid,urlDatabases) //only pass the urls that belong to the current user
+    urls: helpers.getUserURLs(request.session.uid, urlDatabases) //only pass the urls that belong to the current user
   };
   return response.render('urls_index', templateVars);
 });
@@ -131,7 +142,7 @@ app.get('/urls/:id', (request, response) => {
     id: request.params.id,
     longURL: urlDatabases[request.params.id].longURL,
   };
-  
+
   return response.render('urls_show', templateVars);
 });
 
@@ -175,17 +186,18 @@ app.get('/register', (request, response) => {
 app.post('/register', (request, response) => {
   //filter bad email/password entries
   if (!request.body.email || !request.body.password) {
-    return response.status(400).redirect('/register');
+    return response.status(400).send('Bad Request. Please enter a valid email adddress and password.');
   }
   //filter registration of existing user
-  if(helpers.getUserByEmail) {
-    return response.status(400).redirect('/login');
+  if (helpers.getUserByEmail(request.body.email,users)) {
+    return response.status(400).send(`Bad Request. The email address ${request.body.email} is already in use.`);
   }
   //happy path = generate unique user ID and save new user to database
   const uid = helpers.generateRandomString();
   const email = request.body.email;
   const password = request.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
+
   //save user to database
   users[uid] = {
     uid,
@@ -214,8 +226,8 @@ app.post('/login', (request, response) => {
   let user = null;
 
   //check if user email is registered in database
-  if (helpers.isValidCredentials(request.body.email, request.body.password,users)) {
-    user = helpers.getUserByEmail(request.body.email,users);
+  if (helpers.isValidCredentials(request.body.email, request.body.password, users)) {
+    user = helpers.getUserByEmail(request.body.email, users);
   } else {
     return response.status(403).send('Invalid Login Credentials');
   }
@@ -231,6 +243,9 @@ app.post('/logout', (request, response) => {
 });
 
 app.get('/', (request, response) => {
+  if (!users[request.session.uid]) {
+    return response.status(401).redirect('/login');
+  }
   return response.send('Hello!');
 });
 
